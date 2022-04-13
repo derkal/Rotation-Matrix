@@ -1,6 +1,6 @@
 import numpy as np
 
-#conversion between ra,dec and l,b
+#conversion matrix between ra,dec and l,b
 
 '''a_g = np.array([[-0.0548755604, +0.4941094279, -0.8676661490],
                 [-0.8734370902, -0.4448296300, -0.1980763734], 
