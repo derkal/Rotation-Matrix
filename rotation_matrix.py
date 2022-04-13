@@ -178,7 +178,7 @@ def pmphi12(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec):
     else:
         return [mu_phi1_cos_phi2,mu_phi2]
 
-def pmphi12_reflex(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec,dist,vlsr):
+def pmphi12_reflex(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec,dist,vlsr=np.array([11.1,245,7.3])):
     
     ''' 
     returns proper motions in coordinates defined by R_phi12_radec transformation corrected by the Sun's reflex motion
