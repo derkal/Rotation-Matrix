@@ -229,3 +229,64 @@ def pmphi12_reflex(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec,dist,vl
 
 
 
+def obs_from_pos6d(pos,vel,R_phi12_lb,R0=8.178,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
+
+    '''
+    returns observables (phi1,phi2,distance,pm1,pm2,vr) from a position and velocity vector
+    pos is assumed to be in kpc and vel is assumed to be in km/s
+    R_phi12_lb is the rotation matrix to phi12 from l,b
+    R0 is the Sun's distance from the galactic center in kpc
+    vlsr is the Sun's velocity relative to the galaxy in km/s
+    reflex_correction is a boolean which selects if the observables are reflex corrected
+    '''
+    
+    scalar_input = False
+    if pos.ndim == 1:
+        pos = pos[None]
+        vel = vel[None]
+        scalar_input = True
+    
+    pos = pos - np.array([-R0,0.,0.])
+    
+    theta = np.arctan2(pos[:,1],pos[:,0])
+    theta = np.mod(theta,2.*np.pi)
+    theta[theta > np.pi] -= 2.*np.pi
+    phi = np.arcsin(pos[:,2]/(pos[:,0]**2.+pos[:,1]**2.+pos[:,2]**2.)**0.5)
+
+    l = 180./np.pi*theta
+    b = 180./np.pi*phi
+
+    vec_lb = np.array([np.cos(l*np.pi/180.)*np.cos(b*np.pi/180.),np.sin(l*np.pi/180.)*np.cos(b*np.pi/180.),np.sin(b*np.pi/180.)])
+
+    vec_phi12 = np.zeros(np.shape(vec_lb))
+
+    vec_phi12[0] = np.sum(R_phi12_lb[0][i]*vec_lb[i] for i in range(3))
+    vec_phi12[1] = np.sum(R_phi12_lb[1][i]*vec_lb[i] for i in range(3))
+    vec_phi12[2] = np.sum(R_phi12_lb[2][i]*vec_lb[i] for i in range(3))
+
+    vec_phi12 = vec_phi12.T
+
+    print('Did the dot!')
+
+    phi1 = np.arctan2(vec_phi12[:,1],vec_phi12[:,0])*180./np.pi
+    phi2 = np.arcsin(vec_phi12[:,2]/np.sum(vec_phi12[:,i]**2. for i in range(3))**0.5)*180./np.pi
+    
+    r_stream = np.sum(pos[:,i]**2. for i in range(3))**0.5
+    
+    if reflex_correction==False:
+        vel = vel - vlsr
+
+    vr_stream = np.sum((np.cos(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[0,axis]+np.sin(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[1,axis]+np.sin(phi2*np.pi/180.)*R_phi12_lb[2,axis])*vel[:,axis] for axis in range(3))
+    mu_phi1_cos_phi2_stream = 1./(k_mu*r_stream)*np.sum( (-np.sin(phi1*np.pi/180.)*R_phi12_lb[0,axis]+np.cos(phi1*np.pi/180.)*R_phi12_lb[1,axis])*vel[:,axis] for axis in range(3))
+    mu_phi2_stream = 1./(k_mu*r_stream)*np.sum( (-np.cos(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[0,axis] - np.sin(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[1,axis] + np.cos(phi2*np.pi/180.)*R_phi12_lb[2,axis])*vel[:,axis] for axis in range(3)) 
+
+    #nvlsr = -vlsr
+    #mu_phi1_cos_phi2_stream_corr =  mu_phi1_cos_phi2_stream - 1./(k_mu*r_stream)*np.sum( (-np.sin(phi1*np.pi/180.)*R_phi12_lb[0,axis]+np.cos(phi1*np.pi/180.)*R_phi12_lb[1,axis])*nvlsr[axis] for axis in range(3))
+    #mu_phi2_stream_corr = mu_phi2_stream - 1./(k_mu*r_stream)*np.sum( (-np.cos(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[0,axis] - np.sin(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[1,axis] + np.cos(phi2*np.pi/180.)*R_phi12_lb[2,axis])*nvlsr[axis] for axis in range(3)) 
+    #vr_stream_corr = vr_stream - np.sum( (np.cos(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[0,axis] + np.sin(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[1,axis] + np.sin(phi2*np.pi/180.)*R_phi12_lb[2,axis])*nvlsr[axis] for axis in range(3))
+
+    
+    if scalar_input:
+        return np.squeeze(phi1),np.squeeze(phi2),np.squeeze(r_stream),np.squeeze(mu_phi1_cos_phi2_stream),np.squeeze(mu_phi2_stream),np.squeeze(vr_stream)
+    else:
+        return phi1,phi2,r_stream,mu_phi1_cos_phi2_stream,mu_phi2_stream,vr_stream
