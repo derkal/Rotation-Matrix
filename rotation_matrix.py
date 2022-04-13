@@ -57,9 +57,9 @@ def phi12(alpha,delta,alpha_pole,delta_pole,phi1_0):
 
     R_phi12_radec = Mrot(alpha_pole,delta_pole,phi1_0)
 
-    vec_phi12[0] = np.sum(R_phi12_radec[0][i]*vec_radec[i] for i in range(3))
-    vec_phi12[1] = np.sum(R_phi12_radec[1][i]*vec_radec[i] for i in range(3))
-    vec_phi12[2] = np.sum(R_phi12_radec[2][i]*vec_radec[i] for i in range(3))
+    vec_phi12[0] = sum(R_phi12_radec[0][i]*vec_radec[i] for i in range(3))
+    vec_phi12[1] = sum(R_phi12_radec[1][i]*vec_radec[i] for i in range(3))
+    vec_phi12[2] = sum(R_phi12_radec[2][i]*vec_radec[i] for i in range(3))
 
     vec_phi12 = vec_phi12.T
 
