@@ -93,9 +93,9 @@ def phi12_rotmat(alpha,delta,R_phi12_radec):
 
     vec_phi12 = np.zeros(np.shape(vec_radec))
     
-    vec_phi12[0] = np.sum(R_phi12_radec[0][i]*vec_radec[i] for i in range(3))
-    vec_phi12[1] = np.sum(R_phi12_radec[1][i]*vec_radec[i] for i in range(3))
-    vec_phi12[2] = np.sum(R_phi12_radec[2][i]*vec_radec[i] for i in range(3))
+    vec_phi12[0] = sum(R_phi12_radec[0][i]*vec_radec[i] for i in range(3))
+    vec_phi12[1] = sum(R_phi12_radec[1][i]*vec_radec[i] for i in range(3))
+    vec_phi12[2] = sum(R_phi12_radec[2][i]*vec_radec[i] for i in range(3))
     
     vec_phi12 = vec_phi12.T
 
@@ -154,9 +154,9 @@ def pmphi12(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec):
 
     worker2 = np.zeros((len(alpha),3))
 
-    worker2[:,0] = np.sum(R_phi12_radec[0][axis]*worker[:,axis] for axis in range(3))
-    worker2[:,1] = np.sum(R_phi12_radec[1][axis]*worker[:,axis] for axis in range(3))
-    worker2[:,2] = np.sum(R_phi12_radec[2][axis]*worker[:,axis] for axis in range(3))
+    worker2[:,0] = sum(R_phi12_radec[0][axis]*worker[:,axis] for axis in range(3))
+    worker2[:,1] = sum(R_phi12_radec[1][axis]*worker[:,axis] for axis in range(3))
+    worker2[:,2] = sum(R_phi12_radec[2][axis]*worker[:,axis] for axis in range(3))
 
     worker[:,0] = ( np.cos(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*worker2[:,0]
                    +np.sin(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*worker2[:,1]
@@ -260,30 +260,30 @@ def obs_from_pos6d(pos,vel,R_phi12_lb,R0=8.178,vlsr=np.array([11.1,245,7.3]),ref
 
     vec_phi12 = np.zeros(np.shape(vec_lb))
 
-    vec_phi12[0] = np.sum(R_phi12_lb[0][i]*vec_lb[i] for i in range(3))
-    vec_phi12[1] = np.sum(R_phi12_lb[1][i]*vec_lb[i] for i in range(3))
-    vec_phi12[2] = np.sum(R_phi12_lb[2][i]*vec_lb[i] for i in range(3))
+    vec_phi12[0] = sum(R_phi12_lb[0][i]*vec_lb[i] for i in range(3))
+    vec_phi12[1] = sum(R_phi12_lb[1][i]*vec_lb[i] for i in range(3))
+    vec_phi12[2] = sum(R_phi12_lb[2][i]*vec_lb[i] for i in range(3))
 
     vec_phi12 = vec_phi12.T
 
     print('Did the dot!')
 
     phi1 = np.arctan2(vec_phi12[:,1],vec_phi12[:,0])*180./np.pi
-    phi2 = np.arcsin(vec_phi12[:,2]/np.sum(vec_phi12[:,i]**2. for i in range(3))**0.5)*180./np.pi
+    phi2 = np.arcsin(vec_phi12[:,2]/sum(vec_phi12[:,i]**2. for i in range(3))**0.5)*180./np.pi
     
-    r_stream = np.sum(pos[:,i]**2. for i in range(3))**0.5
+    r_stream = sum(pos[:,i]**2. for i in range(3))**0.5
     
     if reflex_correction==False:
         vel = vel - vlsr
 
-    vr_stream = np.sum((np.cos(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[0,axis]+np.sin(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[1,axis]+np.sin(phi2*np.pi/180.)*R_phi12_lb[2,axis])*vel[:,axis] for axis in range(3))
-    mu_phi1_cos_phi2_stream = 1./(k_mu*r_stream)*np.sum( (-np.sin(phi1*np.pi/180.)*R_phi12_lb[0,axis]+np.cos(phi1*np.pi/180.)*R_phi12_lb[1,axis])*vel[:,axis] for axis in range(3))
-    mu_phi2_stream = 1./(k_mu*r_stream)*np.sum( (-np.cos(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[0,axis] - np.sin(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[1,axis] + np.cos(phi2*np.pi/180.)*R_phi12_lb[2,axis])*vel[:,axis] for axis in range(3)) 
+    vr_stream = sum((np.cos(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[0,axis]+np.sin(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[1,axis]+np.sin(phi2*np.pi/180.)*R_phi12_lb[2,axis])*vel[:,axis] for axis in range(3))
+    mu_phi1_cos_phi2_stream = 1./(k_mu*r_stream)*sum( (-np.sin(phi1*np.pi/180.)*R_phi12_lb[0,axis]+np.cos(phi1*np.pi/180.)*R_phi12_lb[1,axis])*vel[:,axis] for axis in range(3))
+    mu_phi2_stream = 1./(k_mu*r_stream)*sum( (-np.cos(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[0,axis] - np.sin(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[1,axis] + np.cos(phi2*np.pi/180.)*R_phi12_lb[2,axis])*vel[:,axis] for axis in range(3)) 
 
     #nvlsr = -vlsr
-    #mu_phi1_cos_phi2_stream_corr =  mu_phi1_cos_phi2_stream - 1./(k_mu*r_stream)*np.sum( (-np.sin(phi1*np.pi/180.)*R_phi12_lb[0,axis]+np.cos(phi1*np.pi/180.)*R_phi12_lb[1,axis])*nvlsr[axis] for axis in range(3))
-    #mu_phi2_stream_corr = mu_phi2_stream - 1./(k_mu*r_stream)*np.sum( (-np.cos(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[0,axis] - np.sin(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[1,axis] + np.cos(phi2*np.pi/180.)*R_phi12_lb[2,axis])*nvlsr[axis] for axis in range(3)) 
-    #vr_stream_corr = vr_stream - np.sum( (np.cos(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[0,axis] + np.sin(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[1,axis] + np.sin(phi2*np.pi/180.)*R_phi12_lb[2,axis])*nvlsr[axis] for axis in range(3))
+    #mu_phi1_cos_phi2_stream_corr =  mu_phi1_cos_phi2_stream - 1./(k_mu*r_stream)*sum( (-np.sin(phi1*np.pi/180.)*R_phi12_lb[0,axis]+np.cos(phi1*np.pi/180.)*R_phi12_lb[1,axis])*nvlsr[axis] for axis in range(3))
+    #mu_phi2_stream_corr = mu_phi2_stream - 1./(k_mu*r_stream)*sum( (-np.cos(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[0,axis] - np.sin(phi1*np.pi/180.)*np.sin(phi2*np.pi/180.)*R_phi12_lb[1,axis] + np.cos(phi2*np.pi/180.)*R_phi12_lb[2,axis])*nvlsr[axis] for axis in range(3)) 
+    #vr_stream_corr = vr_stream - sum( (np.cos(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[0,axis] + np.sin(phi1*np.pi/180.)*np.cos(phi2*np.pi/180.)*R_phi12_lb[1,axis] + np.sin(phi2*np.pi/180.)*R_phi12_lb[2,axis])*nvlsr[axis] for axis in range(3))
 
     
     if scalar_input:
