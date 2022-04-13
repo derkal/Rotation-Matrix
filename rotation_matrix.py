@@ -266,8 +266,6 @@ def obs_from_pos6d(pos,vel,R_phi12_lb,R0=8.178,vlsr=np.array([11.1,245,7.3]),ref
 
     vec_phi12 = vec_phi12.T
 
-    print('Did the dot!')
-
     phi1 = np.arctan2(vec_phi12[:,1],vec_phi12[:,0])*180./np.pi
     phi2 = np.arcsin(vec_phi12[:,2]/sum(vec_phi12[:,i]**2. for i in range(3))**0.5)*180./np.pi
     
