@@ -288,3 +288,70 @@ def obs_from_pos6d(pos,vel,R_phi12_lb,R0=8.178,vlsr=np.array([11.1,245,7.3]),ref
         return np.squeeze(phi1),np.squeeze(phi2),np.squeeze(r_stream),np.squeeze(mu_phi1_cos_phi2_stream),np.squeeze(mu_phi2_stream),np.squeeze(vr_stream)
     else:
         return phi1,phi2,r_stream,mu_phi1_cos_phi2_stream,mu_phi2_stream,vr_stream
+
+    
+def pos6d_from_obs(phi1,phi2,dist,pm1,pm2,vr,R_phi12_lb,R0=8.178,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
+    
+    '''
+    returns the position and velocity from a given set of observables in a coordinate system defined by
+    the matrix R_phi12_lb (which takes a vector in lb to phi12)
+
+    inputs:
+    phi1,phi2 are assumed to be in degrees
+    dist is in kpc
+    pm1,pm2 are in mas/yr
+    vr is in km/s
+    R_phi12_lb is a rotation matrix to go from a vector in l,b to phi1,phi2
+
+    outputs:
+    pos is in kpc
+    vel is in km/s
+    '''
+    
+    phi1 = np.asarray(phi1)
+    phi2 = np.asarray(phi2)
+    dist = np.asarray(dist)
+    pm1  = np.asarray(pm1)
+    pm2  = np.asarray(pm2)
+    vr   = np.asarray(vr)
+    scalar_input = False
+    
+    if phi1.ndim == 0:
+        phi1 = phi1[None]
+        phi2 = phi2[None]
+        dist = dist[None]
+        pm1  = pm1[None]
+        pm2  = pm2[None]
+        vr   = vr[None]
+        scalar_input = True
+    
+    l,b = phi12_rotmat(phi1,phi2,R_phi12_lb.T)
+    
+    pos = np.zeros((len(phi1),3))
+    
+    pos[:,0] = -R0 + dist*np.cos(l*np.pi/180.)*np.cos(b*np.pi/180.)
+    pos[:,1] =       dist*np.sin(l*np.pi/180.)*np.cos(b*np.pi/180.)
+    pos[:,2] =       dist*np.sin(b*np.pi/180.)
+    
+    worker = np.zeros((len(phi1),3))
+    
+    phi1 = phi1*np.pi/180.
+    phi2 = phi2*np.pi/180.
+    
+    worker[:,0] = vr*np.cos(phi1)*np.cos(phi2)-k_mu*dist*pm1*np.sin(phi1)-k_mu*dist*pm2*np.cos(phi1)*np.sin(phi2)
+    worker[:,1] = vr*np.sin(phi1)*np.cos(phi2)+k_mu*dist*pm1*np.cos(phi1)-k_mu*dist*pm2*np.sin(phi1)*np.sin(phi2)
+    worker[:,2] = vr*np.sin(phi2)+k_mu*dist*pm2*np.cos(phi2)
+    
+    vel = np.zeros((len(phi1),3))
+    
+    vel[:,0] = sum(R_phi12_lb[axis][0]*worker[:,axis] for axis in range(3))
+    vel[:,1] = sum(R_phi12_lb[axis][1]*worker[:,axis] for axis in range(3))
+    vel[:,2] = sum(R_phi12_lb[axis][2]*worker[:,axis] for axis in range(3))
+    
+    if reflex_correction == False:
+        vel = vel + vlsr
+    
+    if scalar_input:    
+        return np.squeeze(pos),np.squeeze(vel)
+    else:
+        return pos,vel
