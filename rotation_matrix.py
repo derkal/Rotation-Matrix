@@ -5,7 +5,7 @@ import numpy as np
 a_g = np.array([[-0.0548755604, +0.4941094279, -0.8676661490],
                 [-0.8734370902, -0.4448296300, -0.1980763734], 
                 [-0.4838350155, 0.7469822445, +0.4559837762]])
-
+k_mu = 4.74047
 
 def Mrot(alpha_pole,delta_pole,phi1_0):
     '''
@@ -115,8 +115,6 @@ def pmphi12(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec):
     Critical: All angles must be in degrees
     '''
     
-    k_mu = 4.74047
-
     alpha = np.asarray(alpha)
     delta = np.asarray(delta)
     mu_alpha_cos_delta = np.asarray(mu_alpha_cos_delta)
@@ -200,8 +198,6 @@ def pmphi12_reflex(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec,dist,vl
         mu_delta = mu_delta[None]
         dist = dist[None]
         scalar_input = True
-
-    k_mu = 4.74047
 
     a_g = np.array([[-0.0548755604, +0.4941094279, -0.8676661490],
                     [-0.8734370902, -0.4448296300, -0.1980763734], 
