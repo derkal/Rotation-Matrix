@@ -2,9 +2,9 @@ import numpy as np
 
 #conversion matrix between ra,dec and l,b
 
-'''a_g = np.array([[-0.0548755604, +0.4941094279, -0.8676661490],
+a_g = np.array([[-0.0548755604, +0.4941094279, -0.8676661490],
                 [-0.8734370902, -0.4448296300, -0.1980763734], 
-                [-0.4838350155, 0.7469822445, +0.4559837762]])'''
+                [-0.4838350155, 0.7469822445, +0.4559837762]])
 
 
 def Mrot(alpha_pole,delta_pole,phi1_0):
@@ -229,16 +229,18 @@ def pmphi12_reflex(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec,dist,vl
 
 
 
-def obs_from_pos6d(pos,vel,R_phi12_lb,R0=8.178,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
+def obs_from_pos6d(pos,vel,R_phi12_radec,R0=8.178,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
 
     '''
     returns observables (phi1,phi2,distance,pm1,pm2,vr) from a position and velocity vector
     pos is assumed to be in kpc and vel is assumed to be in km/s
-    R_phi12_lb is the rotation matrix to phi12 from l,b
+    R_phi12_radec is the rotation matrix from ra,dec to phi12
     R0 is the Sun's distance from the galactic center in kpc
     vlsr is the Sun's velocity relative to the galaxy in km/s
     reflex_correction is a boolean which selects if the observables are reflex corrected
     '''
+
+    R_phi12_lb = np.dot(R_phi12_radec,a_g)
     
     scalar_input = False
     if pos.ndim == 1:
@@ -290,7 +292,7 @@ def obs_from_pos6d(pos,vel,R_phi12_lb,R0=8.178,vlsr=np.array([11.1,245,7.3]),ref
         return phi1,phi2,r_stream,mu_phi1_cos_phi2_stream,mu_phi2_stream,vr_stream
 
     
-def pos6d_from_obs(phi1,phi2,dist,pm1,pm2,vr,R_phi12_lb,R0=8.178,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
+def pos6d_from_obs(phi1,phi2,dist,pm1,pm2,vr,R_phi12_radec,R0=8.178,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
     
     '''
     returns the position and velocity from a given set of observables in a coordinate system defined by
@@ -301,12 +303,14 @@ def pos6d_from_obs(phi1,phi2,dist,pm1,pm2,vr,R_phi12_lb,R0=8.178,vlsr=np.array([
     dist is in kpc
     pm1,pm2 are in mas/yr
     vr is in km/s
-    R_phi12_lb is a rotation matrix to go from a vector in l,b to phi1,phi2
+    R_phi12_radec is a rotation matrix to go from a vector in ra,dec to phi1,phi2
 
     outputs:
     pos is in kpc
     vel is in km/s
     '''
+
+    R_phi12_lb = np.dot(R_phi12_radec,a_g)
     
     phi1 = np.asarray(phi1)
     phi2 = np.asarray(phi2)
