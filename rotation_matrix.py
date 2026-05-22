@@ -214,7 +214,7 @@ def pmphi12_reflex(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec,dist,vl
 
     M_UVW_phi12 = np.array([[np.cos(phi1)*np.cos(phi2),-np.sin(phi1),-np.cos(phi1)*np.sin(phi2)],
                             [np.sin(phi1)*np.cos(phi2), np.cos(phi1),-np.sin(phi1)*np.sin(phi2)],
-                            [     np.sin(phi2)        ,      0.     , np.cos(phi2)]])
+                            [     np.sin(phi2)        ,      0.     , np.cos(phi2)]], dtype="object")
 
     vec_nvlsr_phi12 = np.dot(M_UVW_phi12.T,np.dot(R_phi12_radec,np.dot(a_g,nvlsr)))
 
@@ -225,13 +225,14 @@ def pmphi12_reflex(alpha,delta,mu_alpha_cos_delta,mu_delta,R_phi12_radec,dist,vl
 
 
 
-def obs_from_pos6d(pos,vel,R_phi12_radec,R0=8.178,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
+def obs_from_pos6d(pos,vel,R_phi12_radec,R0=8.178,z0=0.,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
 
     '''
     returns observables (phi1,phi2,distance,pm1,pm2,vr) from a position and velocity vector
     pos is assumed to be in kpc and vel is assumed to be in km/s
     R_phi12_radec is the rotation matrix from ra,dec to phi12
     R0 is the Sun's distance from the galactic center in kpc
+    z0 is the Sun's height above the galactic disk
     vlsr is the Sun's velocity relative to the galaxy in km/s
     reflex_correction is a boolean which selects if the observables are reflex corrected
     '''
@@ -244,7 +245,7 @@ def obs_from_pos6d(pos,vel,R_phi12_radec,R0=8.178,vlsr=np.array([11.1,245,7.3]),
         vel = vel[None]
         scalar_input = True
     
-    pos = pos - np.array([-R0,0.,0.])
+    pos = pos - np.array([-R0,0.,z0])
     
     theta = np.arctan2(pos[:,1],pos[:,0])
     theta = np.mod(theta,2.*np.pi)
@@ -288,7 +289,7 @@ def obs_from_pos6d(pos,vel,R_phi12_radec,R0=8.178,vlsr=np.array([11.1,245,7.3]),
         return phi1,phi2,r_stream,mu_phi1_cos_phi2_stream,mu_phi2_stream,vr_stream
 
     
-def pos6d_from_obs(phi1,phi2,dist,pm1,pm2,vr,R_phi12_radec,R0=8.178,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
+def pos6d_from_obs(phi1,phi2,dist,pm1,pm2,vr,R_phi12_radec,R0=8.178,z0=0.,vlsr=np.array([11.1,245,7.3]),reflex_correction=False):
     
     '''
     returns the position and velocity from a given set of observables in a coordinate system defined by
@@ -300,6 +301,8 @@ def pos6d_from_obs(phi1,phi2,dist,pm1,pm2,vr,R_phi12_radec,R0=8.178,vlsr=np.arra
     pm1,pm2 are in mas/yr
     vr is in km/s
     R_phi12_radec is a rotation matrix to go from a vector in ra,dec to phi1,phi2
+    R0 is the Sun's distance from the Galactic center in kpc
+    z0 is the Sun's height above the Galactic plane
 
     outputs:
     pos is in kpc
@@ -314,9 +317,13 @@ def pos6d_from_obs(phi1,phi2,dist,pm1,pm2,vr,R_phi12_radec,R0=8.178,vlsr=np.arra
     pm1  = np.asarray(pm1)
     pm2  = np.asarray(pm2)
     vr   = np.asarray(vr)
+    
     scalar_input = False
     
-    if phi1.ndim == 0:
+    if phi1.ndim == 1:
+        scalar_input = True
+    
+    if phi1.ndim == 0 and scalar_input == False:
         phi1 = phi1[None]
         phi2 = phi2[None]
         dist = dist[None]
@@ -331,7 +338,7 @@ def pos6d_from_obs(phi1,phi2,dist,pm1,pm2,vr,R_phi12_radec,R0=8.178,vlsr=np.arra
     
     pos[:,0] = -R0 + dist*np.cos(l*np.pi/180.)*np.cos(b*np.pi/180.)
     pos[:,1] =       dist*np.sin(l*np.pi/180.)*np.cos(b*np.pi/180.)
-    pos[:,2] =       dist*np.sin(b*np.pi/180.)
+    pos[:,2] =  z0 + dist*np.sin(b*np.pi/180.)
     
     worker = np.zeros((len(phi1),3))
     
