@@ -231,8 +231,8 @@ def obs_from_pos6d(pos,vel,R_phi12_radec,R0=8.178,z0=0.,vlsr=np.array([11.1,245,
     returns observables (phi1,phi2,distance,pm1,pm2,vr) from a position and velocity vector
     pos is assumed to be in kpc and vel is assumed to be in km/s
     R_phi12_radec is the rotation matrix from ra,dec to phi12
-    R0 is the Sun's distance from the galactic center in kpc
-    z0 is the Sun's height above the galactic disk
+    R0 is the Sun's distance from the Galactic center in kpc
+    z0 is the Sun's height above the Galactic plane in kpc
     vlsr is the Sun's velocity relative to the galaxy in km/s
     reflex_correction is a boolean which selects if the observables are reflex corrected
     '''
